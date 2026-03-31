@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Pomodoro Timer - Productivity Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timer-container {
+        max-width: 500px;
+        margin: 0 auto;
+        text-align: center;
+    }
+    .timer-display {
+        font-size: 6rem;
+        font-weight: bold;
+        font-variant-numeric: tabular-nums;
+        color: #333;
+        margin: 1rem 0;
+    }
+    .mode-btn {
+        margin: 0 0.25rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="timer-container bg-white p-5 rounded shadow-sm card-custom">
+    <h2 class="mb-4 text-danger"><i class="fas fa-stopwatch"></i> Pomodoro Timer</h2>
+
+    <div class="btn-group mb-4" role="group" aria-label="Timer modes">
+        <button type="button" class="btn btn-outline-danger mode-btn active" id="btn-pomodoro" onclick="setMode('pomodoro')">Pomodoro</button>
+        <button type="button" class="btn btn-outline-success mode-btn" id="btn-shortBreak" onclick="setMode('shortBreak')">Short Break</button>
+        <button type="button" class="btn btn-outline-info mode-btn" id="btn-longBreak" onclick="setMode('longBreak')">Long Break</button>
+    </div>
+
+    <div class="timer-display" id="time-display">25:00</div>
+
+    <div class="mt-4">
+        <button class="btn btn-lg btn-primary px-5 me-2" id="start-btn" onclick="toggleTimer()">START</button>
+        <button class="btn btn-lg btn-secondary px-4" onclick="resetTimer()"><i class="fas fa-undo"></i> Reset</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let timer;
+    let isRunning = false;
+    let currentMode = 'pomodoro';
+
+    const modes = {
+        pomodoro: 25 * 60,
+        shortBreak: 5 * 60,
+        longBreak: 15 * 60
+    };
+
+    let timeRemaining = modes[currentMode];
+
+    const display = document.getElementById('time-display');
+    const startBtn = document.getElementById('start-btn');
+    const modeBtns = document.querySelectorAll('.mode-btn');
+
+    function updateDisplay() {
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        display.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        document.title = `${display.textContent} - Pomodoro`;
+    }
+
+    function setMode(mode) {
+        if (isRunning) return; // Prevent changing mode while running
+
+        currentMode = mode;
+        timeRemaining = modes[currentMode];
+
+        // Update buttons UI
+        modeBtns.forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`btn-${mode}`).classList.add('active');
+
+        updateDisplay();
+    }
+
+    function toggleTimer() {
+        if (isRunning) {
+            clearInterval(timer);
+            startBtn.textContent = 'START';
+            startBtn.classList.remove('btn-warning');
+            startBtn.classList.add('btn-primary');
+        } else {
+            timer = setInterval(() => {
+                if (timeRemaining > 0) {
+                    timeRemaining--;
+                    updateDisplay();
+                } else {
+                    clearInterval(timer);
+                    isRunning = false;
+                    startBtn.textContent = 'START';
+                    alert('Time is up!');
+                }
+            }, 1000);
+            startBtn.textContent = 'PAUSE';
+            startBtn.classList.remove('btn-primary');
+            startBtn.classList.add('btn-warning');
+        }
+        isRunning = !isRunning;
+    }
+
+    function resetTimer() {
+        clearInterval(timer);
+        isRunning = false;
+        timeRemaining = modes[currentMode];
+        updateDisplay();
+        startBtn.textContent = 'START';
+        startBtn.classList.remove('btn-warning');
+        startBtn.classList.add('btn-primary');
+    }
+
+    // Initialize display
+    updateDisplay();
+</script>
+{% endblock %}

@@ -31,6 +31,14 @@ def init_db():
                 category TEXT
             )
         ''')
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS habits (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                completed_today BOOLEAN NOT NULL DEFAULT 0,
+                streak INTEGER NOT NULL DEFAULT 0
+            )
+        ''')
         db.commit()
 
 @app.route('/')
@@ -114,6 +122,61 @@ def toggle(task_id):
     cursor.execute('UPDATE tasks SET done = NOT done WHERE id = ?', (task_id,))
     db.commit()
     return redirect(url_for('index'))
+
+@app.route('/pomodoro')
+def pomodoro():
+    return render_template('pomodoro.html')
+
+@app.route('/habits')
+def habits():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute('SELECT * FROM habits ORDER BY id DESC')
+    habits_list = cursor.fetchall()
+    return render_template('habits.html', habits=habits_list)
+
+@app.route('/add_habit', methods=['POST'])
+def add_habit():
+    name = request.form.get('name')
+    if name:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute('INSERT INTO habits (name) VALUES (?)', (name,))
+        db.commit()
+    return redirect(url_for('habits'))
+
+@app.route('/toggle_habit/<int:habit_id>', methods=['POST'])
+def toggle_habit(habit_id):
+    db = get_db()
+    cursor = db.cursor()
+    # Logic to handle toggle and streak update
+    cursor.execute('SELECT completed_today, streak FROM habits WHERE id = ?', (habit_id,))
+    habit = cursor.fetchone()
+
+    if habit:
+        is_completed = habit['completed_today']
+        current_streak = habit['streak']
+
+        if is_completed:
+            # If it was completed, uncomplete it and decrease streak
+            new_streak = max(0, current_streak - 1)
+            cursor.execute('UPDATE habits SET completed_today = 0, streak = ? WHERE id = ?', (new_streak, habit_id))
+        else:
+            # If not completed, mark as completed and increase streak
+            new_streak = current_streak + 1
+            cursor.execute('UPDATE habits SET completed_today = 1, streak = ? WHERE id = ?', (new_streak, habit_id))
+
+        db.commit()
+
+    return redirect(url_for('habits'))
+
+@app.route('/delete_habit/<int:habit_id>', methods=['POST'])
+def delete_habit(habit_id):
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute('DELETE FROM habits WHERE id = ?', (habit_id,))
+    db.commit()
+    return redirect(url_for('habits'))
 
 if __name__ == '__main__':
     init_db()

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Habits - Productivity Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .habit-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+    .streak-badge {
+        font-size: 0.9rem;
+    }
+    .completed-habit .habit-name {
+        text-decoration: line-through;
+        color: #888;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="habit-container bg-white p-4 rounded shadow-sm card-custom">
+    <h1 class="mb-4 text-center text-success"><i class="fas fa-calendar-check"></i> Daily Habits Tracker</h1>
+
+    <!-- Add Habit Form -->
+    <form action="{{ url_for('add_habit') }}" method="post" class="d-flex mb-4 gap-2">
+        <input type="text" name="name" class="form-control" placeholder="New habit to track..." required>
+        <button type="submit" class="btn btn-success text-nowrap"><i class="fas fa-plus"></i> Add Habit</button>
+    </form>
+
+    <!-- Habits List -->
+    <ul class="list-group">
+        {% for habit in habits %}
+            <li class="list-group-item d-flex justify-content-between align-items-center {% if habit.completed_today %}completed-habit bg-light{% endif %}">
+
+                <div class="d-flex align-items-center flex-grow-1">
+                    <form action="{{ url_for('toggle_habit', habit_id=habit.id) }}" method="post" class="m-0 me-3">
+                        <button type="submit" class="btn btn-link p-0 text-decoration-none" style="font-size: 1.5rem;">
+                            {% if habit.completed_today %}
+                                <i class="fas fa-check-square text-success"></i>
+                            {% else %}
+                                <i class="far fa-square text-secondary"></i>
+                            {% endif %}
+                        </button>
+                    </form>
+
+                    <div class="habit-name fs-5 fw-medium">{{ habit.name }}</div>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <span class="badge bg-warning text-dark streak-badge me-3" title="Current Streak">
+                        <i class="fas fa-fire"></i> {{ habit.streak }}
+                    </span>
+
+                    <form action="{{ url_for('delete_habit', habit_id=habit.id) }}" method="post" class="m-0">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this habit completely?');">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </li>
+        {% else %}
+            <li class="list-group-item text-center text-muted py-4">
+                <i class="fas fa-seedling fa-3x mb-3 text-success" style="opacity: 0.5;"></i>
+                <p>No habits tracked yet. Plant a seed and start tracking today!</p>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

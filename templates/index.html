@@ -1,37 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced To-Do List</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body {
-            background-color: #f4f7f6;
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
-        .container {
-            max-width: 800px;
-        }
-        .task-list-item.done .task-title {
-            text-decoration: line-through;
-            color: #888;
-        }
-        .edit-form {
-            display: none;
-            margin-top: 10px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container bg-white p-4 rounded shadow-sm">
-        <h1 class="mb-4 text-center text-primary"><i class="fas fa-check-double"></i> Advanced To-Do List</h1>
+{% extends "base.html" %}
 
-        <!-- Add Task Form -->
+{% block title %}Tasks - Productivity Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .task-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .task-list-item.done .task-title {
+        text-decoration: line-through;
+        color: #888;
+    }
+    .edit-form {
+        display: none;
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="task-container bg-white p-4 rounded shadow-sm card-custom">
+    <h1 class="mb-4 text-center text-primary"><i class="fas fa-check-double"></i> Advanced To-Do List</h1>
+
+    <!-- Add Task Form -->
         <div class="card mb-4 border-primary">
             <div class="card-header bg-primary text-white">Add New Task</div>
             <div class="card-body">
@@ -167,19 +159,18 @@
                 </li>
             {% endfor %}
         </ul>
-    </div>
+</div>
+{% endblock %}
 
-    <!-- Bootstrap JS and dependencies -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function toggleEdit(taskId) {
-            const form = document.getElementById('edit-form-' + taskId);
-            if (form.style.display === 'none' || form.style.display === '') {
-                form.style.display = 'block';
-            } else {
-                form.style.display = 'none';
-            }
+{% block extra_js %}
+<script>
+    function toggleEdit(taskId) {
+        const form = document.getElementById('edit-form-' + taskId);
+        if (form.style.display === 'none' || form.style.display === '') {
+            form.style.display = 'block';
+        } else {
+            form.style.display = 'none';
         }
-    </script>
-</body>
-</html>
+    }
+</script>
+{% endblock %}
