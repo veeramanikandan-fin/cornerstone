@@ -1,42 +1,53 @@
 {% extends "base.html" %}
 
-{% block title %}Pomodoro Timer - Productivity Hub{% endblock %}
+{% block title %}Pomodoro Timer - Acme Productivity{% endblock %}
 
 {% block extra_css %}
 <style>
-    .timer-container {
-        max-width: 500px;
-        margin: 0 auto;
-        text-align: center;
-    }
     .timer-display {
         font-size: 6rem;
-        font-weight: bold;
+        font-weight: 700;
         font-variant-numeric: tabular-nums;
-        color: #333;
-        margin: 1rem 0;
-    }
-    .mode-btn {
-        margin: 0 0.25rem;
+        line-height: 1;
+        letter-spacing: -0.05em;
+        background: -webkit-linear-gradient(45deg, hsl(var(--primary)), hsl(var(--muted-foreground)));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="timer-container bg-white p-5 rounded shadow-sm card-custom">
-    <h2 class="mb-4 text-danger"><i class="fas fa-stopwatch"></i> Pomodoro Timer</h2>
-
-    <div class="btn-group mb-4" role="group" aria-label="Timer modes">
-        <button type="button" class="btn btn-outline-danger mode-btn active" id="btn-pomodoro" onclick="setMode('pomodoro')">Pomodoro</button>
-        <button type="button" class="btn btn-outline-success mode-btn" id="btn-shortBreak" onclick="setMode('shortBreak')">Short Break</button>
-        <button type="button" class="btn btn-outline-info mode-btn" id="btn-longBreak" onclick="setMode('longBreak')">Long Break</button>
+<div class="flex items-center justify-between space-y-2 mb-8">
+    <div>
+        <h2 class="text-2xl font-bold tracking-tight">Focus Timer</h2>
+        <p class="text-muted-foreground">Boost your productivity using the Pomodoro technique.</p>
     </div>
+</div>
 
-    <div class="timer-display" id="time-display">25:00</div>
+<div class="flex items-center justify-center min-h-[500px]">
+    <div class="shad-card w-full max-w-md p-8 flex flex-col items-center justify-center space-y-8 text-center bg-card">
 
-    <div class="mt-4">
-        <button class="btn btn-lg btn-primary px-5 me-2" id="start-btn" onclick="toggleTimer()">START</button>
-        <button class="btn btn-lg btn-secondary px-4" onclick="resetTimer()"><i class="fas fa-undo"></i> Reset</button>
+        <!-- Mode Tabs -->
+        <div class="inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
+            <button class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 mode-btn active:bg-background active:text-foreground active:shadow-sm" id="btn-pomodoro" onclick="setMode('pomodoro')">Pomodoro</button>
+            <button class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 mode-btn" id="btn-shortBreak" onclick="setMode('shortBreak')">Short Break</button>
+            <button class="inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 mode-btn" id="btn-longBreak" onclick="setMode('longBreak')">Long Break</button>
+        </div>
+
+        <!-- Timer -->
+        <div class="py-12">
+            <div class="timer-display" id="time-display">25:00</div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex items-center justify-center space-x-4 w-full">
+            <button class="shad-button shad-button-primary h-12 px-8 text-lg font-semibold shadow-sm flex-1" id="start-btn" onclick="toggleTimer()">START</button>
+            <button class="shad-button shad-button-outline h-12 w-12 p-0" onclick="resetTimer()" title="Reset Timer">
+                <i data-lucide="refresh-cw" class="h-5 w-5"></i>
+                <span class="sr-only">Reset</span>
+            </button>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -72,9 +83,11 @@
         currentMode = mode;
         timeRemaining = modes[currentMode];
 
-        // Update buttons UI
-        modeBtns.forEach(btn => btn.classList.remove('active'));
-        document.getElementById(`btn-${mode}`).classList.add('active');
+        // Update buttons UI (mimicking tabs)
+        modeBtns.forEach(btn => {
+            btn.classList.remove('bg-background', 'text-foreground', 'shadow-sm');
+        });
+        document.getElementById(`btn-${mode}`).classList.add('bg-background', 'text-foreground', 'shadow-sm');
 
         updateDisplay();
     }
@@ -83,8 +96,8 @@
         if (isRunning) {
             clearInterval(timer);
             startBtn.textContent = 'START';
-            startBtn.classList.remove('btn-warning');
-            startBtn.classList.add('btn-primary');
+            startBtn.classList.remove('bg-destructive', 'text-destructive-foreground', 'hover:bg-destructive/90');
+            startBtn.classList.add('shad-button-primary');
         } else {
             timer = setInterval(() => {
                 if (timeRemaining > 0) {
@@ -98,8 +111,8 @@
                 }
             }, 1000);
             startBtn.textContent = 'PAUSE';
-            startBtn.classList.remove('btn-primary');
-            startBtn.classList.add('btn-warning');
+            startBtn.classList.remove('shad-button-primary');
+            startBtn.classList.add('bg-destructive', 'text-destructive-foreground', 'hover:bg-destructive/90');
         }
         isRunning = !isRunning;
     }
@@ -110,11 +123,11 @@
         timeRemaining = modes[currentMode];
         updateDisplay();
         startBtn.textContent = 'START';
-        startBtn.classList.remove('btn-warning');
-        startBtn.classList.add('btn-primary');
+        startBtn.classList.remove('bg-destructive', 'text-destructive-foreground', 'hover:bg-destructive/90');
+        startBtn.classList.add('shad-button-primary');
     }
 
-    // Initialize display
-    updateDisplay();
+    // Initialize display and UI
+    setMode('pomodoro');
 </script>
 {% endblock %}

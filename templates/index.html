@@ -1,164 +1,174 @@
 {% extends "base.html" %}
 
-{% block title %}Tasks - Productivity Hub{% endblock %}
+{% block title %}Tasks - Acme Productivity{% endblock %}
 
 {% block extra_css %}
 <style>
-    .task-container {
-        max-width: 800px;
-        margin: 0 auto;
-    }
     .task-list-item.done .task-title {
         text-decoration: line-through;
-        color: #888;
+        color: hsl(var(--muted-foreground));
     }
     .edit-form {
         display: none;
-        margin-top: 10px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="task-container bg-white p-4 rounded shadow-sm card-custom">
-    <h1 class="mb-4 text-center text-primary"><i class="fas fa-check-double"></i> Advanced To-Do List</h1>
+<div class="flex items-center justify-between space-y-2 mb-8">
+    <div>
+        <h2 class="text-2xl font-bold tracking-tight">Tasks</h2>
+        <p class="text-muted-foreground">Manage your daily tasks and priorities.</p>
+    </div>
+</div>
 
-    <!-- Add Task Form -->
-        <div class="card mb-4 border-primary">
-            <div class="card-header bg-primary text-white">Add New Task</div>
-            <div class="card-body">
-                <form action="{{ url_for('add') }}" method="post" class="row g-3">
-                    <div class="col-md-12">
-                        <input type="text" name="title" class="form-control" placeholder="Task description..." required>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="date" name="due_date" class="form-control">
-                    </div>
-                    <div class="col-md-4">
-                        <select name="priority" class="form-select">
-                            <option value="">Select Priority</option>
-                            <option value="High">High</option>
-                            <option value="Medium">Medium</option>
-                            <option value="Low">Low</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <input type="text" name="category" class="form-control" placeholder="Category (e.g., Work, Home)">
-                    </div>
-                    <div class="col-12 text-end">
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-plus"></i> Add Task</button>
-                    </div>
-                </form>
+<!-- Add Task Form -->
+<div class="shad-card p-6 mb-8">
+    <div class="flex flex-col space-y-1.5 mb-4">
+        <h3 class="text-lg font-semibold leading-none tracking-tight">Create a new task</h3>
+    </div>
+    <form action="{{ url_for('add') }}" method="post" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="md:col-span-4">
+                <input type="text" name="title" class="shad-input w-full" placeholder="Task description..." required>
+            </div>
+            <div>
+                <input type="date" name="due_date" class="shad-input w-full">
+            </div>
+            <div>
+                <select name="priority" class="shad-input w-full">
+                    <option value="">Priority</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+            <div>
+                <input type="text" name="category" class="shad-input w-full" placeholder="Category">
+            </div>
+            <div class="flex items-end">
+                <button type="submit" class="shad-button shad-button-primary w-full">
+                    <i data-lucide="plus" class="mr-2 h-4 w-4"></i> Add Task
+                </button>
             </div>
         </div>
+    </form>
+</div>
 
-        <!-- Filter and Sort Options -->
-        <div class="row mb-3">
-            <div class="col-md-12">
-                <form action="{{ url_for('index') }}" method="get" class="d-flex align-items-center gap-2">
-                    <label class="fw-bold">Filter:</label>
-                    <select name="category" class="form-select form-select-sm w-auto">
-                        <option value="">All Categories</option>
-                        {% for cat in categories %}
-                            <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>{{ cat }}</option>
-                        {% endfor %}
-                    </select>
+<!-- Filters -->
+<div class="flex flex-wrap items-center justify-between mb-4 gap-4">
+    <form action="{{ url_for('index') }}" method="get" class="flex flex-1 items-center space-x-2">
+        <select name="category" class="shad-input w-[180px]">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+                <option value="{{ cat }}" {% if current_category == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+        </select>
+        <select name="sort_by" class="shad-input w-[180px]">
+            <option value="id DESC" {% if current_sort == 'id DESC' %}selected{% endif %}>Newest First</option>
+            <option value="due_date" {% if current_sort == 'due_date' %}selected{% endif %}>Due Date</option>
+            <option value="priority" {% if current_sort == 'priority' %}selected{% endif %}>Priority</option>
+        </select>
+        <button type="submit" class="shad-button shad-button-secondary">Filter</button>
+        <a href="{{ url_for('index') }}" class="shad-button shad-button-ghost">Clear</a>
+    </form>
+</div>
 
-                    <label class="fw-bold ms-3">Sort:</label>
-                    <select name="sort_by" class="form-select form-select-sm w-auto">
-                        <option value="id DESC" {% if current_sort == 'id DESC' %}selected{% endif %}>Newest First</option>
-                        <option value="due_date" {% if current_sort == 'due_date' %}selected{% endif %}>Due Date</option>
-                        <option value="priority" {% if current_sort == 'priority' %}selected{% endif %}>Priority</option>
-                    </select>
-                    <button type="submit" class="btn btn-sm btn-secondary">Apply</button>
-                    <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-secondary">Clear</a>
-                </form>
-            </div>
-        </div>
-
-        <!-- Tasks List -->
-        <ul class="list-group">
+<!-- Tasks List -->
+<div class="shad-card">
+    <div class="p-0">
+        <ul class="divide-y divide-border">
             {% for task in tasks %}
-                <li class="list-group-item task-list-item {% if task.done %}done bg-light{% endif %}">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <!-- Left side: Toggle and Info -->
-                        <div class="d-flex align-items-center flex-grow-1">
-                            <form action="{{ url_for('toggle', task_id=task.id) }}" method="post" class="m-0 me-3">
-                                <button type="submit" class="btn btn-link p-0 text-decoration-none" style="font-size: 1.5rem;">
+                <li class="flex flex-col p-4 task-list-item {% if task.done %}done bg-muted/50{% endif %} hover:bg-muted/50 transition-colors">
+                    <div class="flex items-center justify-between w-full">
+                        <div class="flex items-center space-x-4 flex-grow">
+                            <!-- Checkbox/Toggle -->
+                            <form action="{{ url_for('toggle', task_id=task.id) }}" method="post" class="m-0 flex items-center">
+                                <button type="submit" class="h-6 w-6 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 flex items-center justify-center {% if task.done %}bg-primary text-primary-foreground{% endif %}">
                                     {% if task.done %}
-                                        <i class="fas fa-check-circle text-success"></i>
-                                    {% else %}
-                                        <i class="far fa-circle text-secondary"></i>
+                                        <i data-lucide="check" class="h-4 w-4"></i>
                                     {% endif %}
                                 </button>
                             </form>
-                            <div>
-                                <span class="task-title fs-5 fw-medium">{{ task.title }}</span>
-                                <div class="text-muted small">
+
+                            <!-- Content -->
+                            <div class="grid gap-1">
+                                <span class="task-title font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">{{ task.title }}</span>
+                                <div class="flex items-center space-x-2 text-sm text-muted-foreground mt-1">
                                     {% if task.due_date %}
-                                        <span class="me-2"><i class="far fa-calendar-alt"></i> {{ task.due_date }}</span>
+                                        <div class="flex items-center">
+                                            <i data-lucide="calendar" class="mr-1 h-3 w-3"></i>
+                                            {{ task.due_date }}
+                                        </div>
                                     {% endif %}
                                     {% if task.category %}
-                                        <span class="badge bg-secondary me-2">{{ task.category }}</span>
+                                        <span class="shad-badge shad-badge-secondary px-1 py-0 text-[10px]">{{ task.category }}</span>
                                     {% endif %}
                                     {% if task.priority %}
-                                        <span class="badge
-                                            {% if task.priority == 'High' %}bg-danger
-                                            {% elif task.priority == 'Medium' %}bg-warning text-dark
-                                            {% else %}bg-info text-dark{% endif %}">
+                                        <span class="shad-badge px-1 py-0 text-[10px]
+                                            {% if task.priority == 'High' %}bg-destructive text-destructive-foreground
+                                            {% elif task.priority == 'Medium' %}bg-yellow-500 text-primary-foreground
+                                            {% else %}bg-blue-500 text-primary-foreground{% endif %}">
                                             {{ task.priority }}
                                         </span>
                                     {% endif %}
                                 </div>
                             </div>
                         </div>
-                        <!-- Right side: Actions -->
-                        <div>
-                            <button type="button" class="btn btn-sm btn-outline-primary" onclick="toggleEdit({{ task.id }})">
-                                <i class="fas fa-edit"></i>
+
+                        <!-- Actions -->
+                        <div class="flex items-center space-x-2">
+                            <button type="button" class="shad-button shad-button-ghost h-8 w-8 p-0" onclick="toggleEdit({{ task.id }})">
+                                <i data-lucide="pencil" class="h-4 w-4"></i>
+                                <span class="sr-only">Edit</span>
                             </button>
-                            <form action="{{ url_for('delete', task_id=task.id) }}" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this task?');">
-                                    <i class="fas fa-trash"></i>
+                            <form action="{{ url_for('delete', task_id=task.id) }}" method="post" class="m-0">
+                                <button type="submit" class="shad-button shad-button-ghost h-8 w-8 p-0 text-destructive" onclick="return confirm('Delete this task?');">
+                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                    <span class="sr-only">Delete</span>
                                 </button>
                             </form>
                         </div>
                     </div>
 
                     <!-- Inline Edit Form -->
-                    <div id="edit-form-{{ task.id }}" class="edit-form p-3 border rounded bg-light">
-                        <form action="{{ url_for('edit', task_id=task.id) }}" method="post" class="row g-2">
-                            <div class="col-md-12">
-                                <input type="text" name="title" class="form-control form-control-sm" value="{{ task.title }}" required>
-                            </div>
-                            <div class="col-md-4">
-                                <input type="date" name="due_date" class="form-control form-control-sm" value="{{ task.due_date or '' }}">
-                            </div>
-                            <div class="col-md-4">
-                                <select name="priority" class="form-select form-select-sm">
-                                    <option value="" {% if not task.priority %}selected{% endif %}>None</option>
-                                    <option value="High" {% if task.priority == 'High' %}selected{% endif %}>High</option>
-                                    <option value="Medium" {% if task.priority == 'Medium' %}selected{% endif %}>Medium</option>
-                                    <option value="Low" {% if task.priority == 'Low' %}selected{% endif %}>Low</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <input type="text" name="category" class="form-control form-control-sm" value="{{ task.category or '' }}">
-                            </div>
-                            <div class="col-12 text-end">
-                                <button type="button" class="btn btn-sm btn-secondary" onclick="toggleEdit({{ task.id }})">Cancel</button>
-                                <button type="submit" class="btn btn-sm btn-success">Save</button>
+                    <div id="edit-form-{{ task.id }}" class="edit-form mt-4 pt-4 border-t">
+                        <form action="{{ url_for('edit', task_id=task.id) }}" method="post" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                <div class="md:col-span-4">
+                                    <input type="text" name="title" class="shad-input w-full" value="{{ task.title }}" required>
+                                </div>
+                                <div>
+                                    <input type="date" name="due_date" class="shad-input w-full" value="{{ task.due_date or '' }}">
+                                </div>
+                                <div>
+                                    <select name="priority" class="shad-input w-full">
+                                        <option value="" {% if not task.priority %}selected{% endif %}>None</option>
+                                        <option value="High" {% if task.priority == 'High' %}selected{% endif %}>High</option>
+                                        <option value="Medium" {% if task.priority == 'Medium' %}selected{% endif %}>Medium</option>
+                                        <option value="Low" {% if task.priority == 'Low' %}selected{% endif %}>Low</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <input type="text" name="category" class="shad-input w-full" value="{{ task.category or '' }}">
+                                </div>
+                                <div class="flex items-end space-x-2">
+                                    <button type="button" class="shad-button shad-button-outline w-full" onclick="toggleEdit({{ task.id }})">Cancel</button>
+                                    <button type="submit" class="shad-button shad-button-primary w-full">Save</button>
+                                </div>
                             </div>
                         </form>
                     </div>
                 </li>
             {% else %}
-                <li class="list-group-item text-center text-muted py-4">
-                    <i class="fas fa-clipboard-list fa-3x mb-3 text-light"></i>
-                    <p>No tasks found. Add a new task above!</p>
+                <li class="p-8 text-center flex flex-col items-center justify-center text-muted-foreground">
+                    <i data-lucide="clipboard-list" class="h-10 w-10 mb-4 opacity-50"></i>
+                    <p class="text-sm font-medium">No tasks found.</p>
+                    <p class="text-xs">Add a new task above to get started.</p>
                 </li>
             {% endfor %}
         </ul>
+    </div>
 </div>
 {% endblock %}
 
