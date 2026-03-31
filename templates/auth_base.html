@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Acme Productivity{% endblock %}</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        :root {
+            /* Shadcn-like CSS variables */
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --muted: 240 4.8% 95.9%;
+            --border: 240 5.9% 90%;
+            --input: 240 5.9% 90%;
+            --ring: 240 10% 3.9%;
+            --radius: 0.5rem;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: hsl(var(--muted)/0.3);
+            color: hsl(var(--foreground));
+        }
+
+        .shad-card {
+            border-radius: var(--radius);
+            border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        .shad-input {
+            display: flex;
+            height: 2.25rem;
+            width: 100%;
+            border-radius: calc(var(--radius) - 2px);
+            border: 1px solid hsl(var(--input));
+            background-color: transparent;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            transition-duration: 150ms;
+        }
+        .shad-input:focus-visible {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            box-shadow: 0 0 0 2px hsl(var(--ring));
+        }
+
+        .shad-button-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: calc(var(--radius) - 2px);
+            font-size: 0.875rem;
+            font-weight: 500;
+            height: 2.25rem;
+            padding: 0.5rem 1rem;
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            cursor: pointer;
+            width: 100%;
+        }
+        .shad-button-primary:hover {
+            background-color: hsl(var(--primary) / 0.9);
+        }
+    </style>
+</head>
+<body class="flex min-h-screen items-center justify-center p-4">
+
+    <div class="w-full max-w-md space-y-6">
+
+        <!-- Flash Messages -->
+        <div class="space-y-2">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="p-3 text-sm rounded-md border {% if category == 'error' %}bg-red-50 text-red-900 border-red-200{% else %}bg-green-50 text-green-900 border-green-200{% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <div class="shad-card p-8">
+            <div class="flex flex-col space-y-2 text-center mb-8">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 mb-2">
+                    <i data-lucide="layers" class="h-6 w-6 text-primary"></i>
+                </div>
+                <h1 class="text-2xl font-semibold tracking-tight">Acme Inc.</h1>
+                <p class="text-sm text-gray-500">
+                    {% block auth_subtitle %}{% endblock %}
+                </p>
+            </div>
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
